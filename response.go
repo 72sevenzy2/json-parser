@@ -28,7 +28,7 @@ func WithError(msg string) ConfigOpts {
 }
 
 // data param func
-func WithData(data interface{}) ConfigOpts {
+func WithData(data any) ConfigOpts {
 	return func(jo *JsonOptions) {
 		jo.Data = data
 	}

@@ -1,6 +1,7 @@
 package response
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 )
@@ -54,19 +55,24 @@ func JSON(w http.ResponseWriter, opts ...ConfigOpts) {
 		opt(options) // each opt is a func that takes a pointer to the JsonOptions struct
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(options.Status)
-
 	response := &Response{
 		Data:   options.Data,
 		Status: options.Status,
 		Error:  options.Error,
 	} // initialising the response
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	var bf bytes.Buffer // encoding the response with the buffer first, so if encoding fails when writing directly to http.ResponseWriter, the headers will be locked and it will be too late to change responses.
+
+	if err := json.NewEncoder(&bf).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
+	// writing headers if encoding succeeds (with buffer)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(options.Status)
+
+	// write the buffer to "w"
+	w.Write(bf.Bytes())
 	// test case for recoverer middleware
 	// panic("he")
 }

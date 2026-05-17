@@ -6,45 +6,39 @@ import (
 	"net/http"
 )
 
-type JsonOptions struct { // this struct will be modified via the ConfigOpts func
-	Data   any
-	Status int
-	Error  string
-}
-
-type ConfigOpts func(*JsonOptions) // any func which returns this type ONLY will use a pointer to the JsonOptions struct like used here
-
-// status param func
-func WithStatus(status int) ConfigOpts { // type of ConfigOpts which returns a func which points to the JsonOptions struct to modify its data which will then be used in my JSON helper func.
-	return func(jo *JsonOptions) {
-		jo.Status = status // modifies the JsonOptions struct (status) to the status passed in as the function param
-	}
-}
-
-// with error param func
-func WithError(msg string) ConfigOpts {
-	return func(jo *JsonOptions) {
-		jo.Error = msg
-	}
-}
-
-// data param func
-func WithData(data any) ConfigOpts {
-	return func(jo *JsonOptions) {
-		jo.Data = data
-	}
-}
-
-// the response format we will be using, will be making another struct for so
+// struct in which will hold req details
 type Response struct {
 	Data   any    `json:"data"`
 	Status int    `json:"status"`
 	Error  string `json:"error,omitempty"`
 }
 
+type ConfigOpts func(*Response) // any func which returns this type ONLY will use a pointer to the responses struct like used here
+
+// status param func
+func WithStatus(status int) ConfigOpts { // type of ConfigOpts which returns a func which points to the responses struct to modify its data which will then be used in my JSON helper func.
+	return func(jo *Response) {
+		jo.Status = status // modifies the responses struct (status) to the status passed in as the function param
+	}
+}
+
+// with error param func
+func WithError(msg string) ConfigOpts {
+	return func(jo *Response) {
+		jo.Error = msg
+	}
+}
+
+// data param func
+func WithData(data any) ConfigOpts {
+	return func(jo *Response) {
+		jo.Data = data
+	}
+}
+
 func JSON(w http.ResponseWriter, opts ...ConfigOpts) {
 	// assigning the default values if i were to assign no params when calling the JSON func
-	options := &JsonOptions{ // these options will be replaced if there were opts included when calling this func with the data in those opts
+	options := &Response{ // these options will be replaced if there were opts included when calling this func with the data in those opts
 		Status: http.StatusOK,
 		Data:   nil,
 		Error:  "",

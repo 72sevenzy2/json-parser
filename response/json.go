@@ -59,6 +59,7 @@ func JSON(w http.ResponseWriter, opts ...ConfigOpts) {
 
 	if err := json.NewEncoder(&bf).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// writing headers if encoding succeeds (with buffer)
@@ -66,7 +67,12 @@ func JSON(w http.ResponseWriter, opts ...ConfigOpts) {
 	w.WriteHeader(options.Status)
 
 	// write the buffer to "w"
-	w.Write(bf.Bytes())
+	_, err := w.Write(bf.Bytes())
+
+	if err != nil {
+		http.Error(w, "unable to write response.", http.StatusBadGateway)
+		return
+	}
 	// test case for recoverer middleware
 	// panic("he")
 }

@@ -3,14 +3,15 @@ package response
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 )
 
 // struct in which will hold req details
 type Response struct {
-	Data   any    `json:"data"`
-	Status int    `json:"status"`
-	Error  string `json:"error,omitempty"`
+	Data   json.RawMessage `json:"data"`
+	Status int             `json:"status"`
+	Error  string          `json:"error,omitempty"`
 }
 
 type ConfigOpts func(*Response) // any func which returns this type ONLY will use a pointer to the responses struct like used here
@@ -30,9 +31,21 @@ func WithError(msg string) ConfigOpts {
 }
 
 // data param func
-func WithData(data any) ConfigOpts {
+func WithData(data io.Reader) ConfigOpts { // param can be passed via strings.NewReader(..) or bytes.NewReader(..)
 	return func(jo *Response) {
-		jo.Data = data
+		b, err := io.ReadAll(data) // read data
+		if err != nil {
+			jo.Error = err.Error()
+			return
+		}
+
+		// validate json
+		if ok := json.Valid(b); !ok {
+			jo.Error = "invalid json format."
+			return
+		}
+
+		jo.Data = json.RawMessage(b) // typecast to type json.RawMessage for encoder.
 	}
 }
 
@@ -73,6 +86,4 @@ func JSON(w http.ResponseWriter, opts ...ConfigOpts) {
 		http.Error(w, "unable to write response.", http.StatusBadGateway)
 		return
 	}
-	// test case for recoverer middleware
-	// panic("he")
 }

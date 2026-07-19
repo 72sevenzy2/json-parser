@@ -1,3 +1,3 @@
 <h2 align="center"> A mini json response lib for http servers in golang.</h2>
 
-- the parser itself includes helper functions (such as Ok() and Failed()) so you dont manually write all the boilerplate for the functional options that go into the JSON() func, although JSON() allows for more control towards response details.
+- the parser itself includes helper functions (such as Ok() and Failed()) so you dont manually write all the boilerplate for the functional options that go into the JSON() func. The Ok() func takes in an ResponseWriter and a []byte to encode the response, in which the []byte can be passed in with the []byte value returned by the json.Marshal() function. The Failed() func just takes in a ResponseWriter and an status number, and an error message that is to be displayed, in which the message in encoded internally into json before being sent.

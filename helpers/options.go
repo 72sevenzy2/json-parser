@@ -29,6 +29,6 @@ func Ok(w http.ResponseWriter, data []byte) {
 }
 
 // Failed helper. -> pass in a http.ResponseWriter, a status code (int), and a message to display to the user (string).
-func Failed(w http.ResponseWriter, status int, msg error) {
-	response.JSON(w, response.WithStatus(status), response.WithError(msg.Error()))
+func Failed(w http.ResponseWriter) {
+	response.JSON(w, response.WithStatus(http.StatusBadRequest), response.WithError(http.StatusText(http.StatusBadRequest))
 }
